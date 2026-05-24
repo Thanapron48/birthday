@@ -1,0 +1,578 @@
+/* ════════════════════════════════
+   ตั้งค่าพื้นฐาน
+════════════════════════════════ */
+* { box-sizing: border-box; /* รวม padding และ border เข้าในขนาด */
+    margin: 0; /* ลบระยะขอบทั้งหมด */
+    padding: 0; /* ลบระยะห่างด้านในทั้งหมด */
+    font-family: 'Arial', sans-serif; } /* กำหนดฟอนต์หลัก */
+    html, body { width: 100%; height: 100%; } /* ความกว้างเต็มจอ ความสูงเต็มจอ*/
+
+body {
+    background-color: #fa87a9; /*สีพื้นหลังกรณีไม่ได้ใส่รูปพื้นหลัง*/
+    background-image: url('BG.jpg'); /*ใส่รูปพื้นหลังตรงนี้ แทน BG.jpg*/
+    background-size: cover; /* ขยายรูปให้เต็มพื้นที่ */
+    background-position: center center; /* จัดรูปให้อยู่ตรงกลาง */
+    min-height: 100vh; min-height: 100dvh; /* ความสูงขั้นต่ำเต็มหน้าจอ รองรับมือถือ */
+    display: flex; justify-content: center; align-items: center; /* จัดกลางแนวนอน แนวตั้ง*/
+    padding: clamp(12px, 3vw, 20px); /* ระยะขอบแบบ responsive */
+    overflow-x: hidden; /* ซ่อนการเลื่อนแนวนอน */
+    overflow-y: auto; /* เลื่อนแนวตั้งได้ */
+}
+
+#confettiCanvas {
+    position: fixed; top: 0; left: 0; /* ตรึงตำแหน่ง ชิดด้านบน ชิดด้านซ้าย*/
+    width: 100%; height: 100%; /* กว้าง สูง เต็มจอ */
+    pointer-events: none; z-index: 100;
+}
+
+/* ════════════════════════════════
+   กล่องแสดงเนื้อหา
+════════════════════════════════ */
+.card-container {
+    background: rgba(15, 182, 253, 0.432); /* สีพื้นหลังโปร่งใสของป็อปอัพ */
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); /* ทำพื้นหลังด้านหลังเบลอ */
+    border: 2px solid rgba(255,255,255,0.35); /* สีและความหนาของขอบกล่อง */
+    padding: clamp(14px,3vw,28px); /* ระยะห่างด้านในแบบ responsive */
+    border-radius: 25px; width: 100%; max-width: 520px; /* ทำมุมโค้ง กว้างเต็มแต่ไม่เกิน 520px */
+    text-align: center; color: #fff; /* จัดข้อความกึ่งกลาง และกำหนดสีตัวอักษร */
+    box-shadow: 0 15px 35px rgba(74, 125, 255, 0.779), inset 0 1px 0 rgba(159, 158, 168, 0.336); /* เพิ่มเงาด้านนอกและเงาด้านใน */
+    position: relative; z-index: 5; /* กำหนดตำแหน่งและลำดับชั้น */
+    /* การ์ด scroll ได้ถ้าจำเป็น */
+    max-height: calc(100dvh - 24px); /* ความสูงสูงสุดไม่เกินหน้าจอ */
+    overflow-y: auto; /* เลื่อนขึ้นลงได้เมื่อเนื้อหาเกิน */
+    scrollbar-width: none; /* ซ่อน scrollbar แต่ยังเลื่อนได้ */
+}
+.card-container::-webkit-scrollbar { display: none; } /* ซ่อน scrollbar ใน Chrome/Safari */
+
+.page { display: none; animation: fadeIn 0.8s ease-in-out forwards; }
+.page.active { display: block; } /* แสดงหน้าที่ active */
+/* สร้างอนิเมชัน fadeIn */
+@keyframes fadeIn {
+    from { opacity:0; transform:translateY(15px); } /* เริ่มจากโปร่งใส เริ่มต่ำลงมา 15px*/
+    to   { opacity:1; transform:translateY(0); } /* จบด้วยมองเห็นเต็ม กลับมาตำแหน่งปกติ*/
+}
+
+/* ════════════════════════════════
+   ตัวอักษรและข้อความ
+════════════════════════════════ */
+/* ตกแต่งหัวข้อหลัก */
+h1 {
+    font-size: clamp(1.3rem,4.5vw,2rem); line-height: 1.35; /* ขนาดตัวอักษรแบบ responsive ระยะห่างระหว่างบรรทัด 1.35 */
+    margin-bottom: clamp(8px,2vw,18px); /* ระยะห่างด้านล่าง */
+    /* ใส่เงาให้ข้อความเด่นขึ้น text-shadow*/
+    text-shadow: 0 0 8px rgba(0,0,0,0.9),1px 1px 3px rgba(0,0,0,0.8),-1px -1px 3px rgba(0,0,0,0.8);
+}
+/* ตกแต่งข้อความทั่วไป */
+p {
+    font-size: clamp(0.95rem,2.5vw,1.1rem); /* ขนาดตัวอักษรแบบ responsive */
+    margin-bottom: clamp(14px,3vw,20px); /* ระยะห่างด้านล่าง */
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8); line-height: 1.5; /* เพิ่มเงาให้ข้อความอ่านง่าย ระยะห่างระหว่างบรรทัด 1.5*/
+}
+
+/* ════════════════════════════════
+   BUTTONS ปุ่ม
+════════════════════════════════ */
+/* ตกแต่งปุ่ม */
+.btn {
+    background: linear-gradient(45deg,#ff6ba6,#c853ff); /* สีพื้นหลังแบบไล่สี */
+    color: white; border: none; /* สีตัวอักษร ไม่มีขอบ */
+    padding: clamp(10px,2vw,14px) clamp(22px,5vw,34px); /* ระยะห่างด้านในของปุ่ม */
+    font-size: clamp(1rem,3vw,1.2rem); /* ขนาดตัวอักษรแบบ responsive */
+    border-radius: 50px; cursor: pointer; font-weight: bold; /* ปุ่มมุมโค้ง เมาส์เป็นรูปมือ และตัวหนา */
+    box-shadow: 0 5px 15px rgba(255,107,139,0.45); /* เพิ่มเงาให้ปุ่ม */
+    transition: all 0.3s ease; /* ทำให้เอฟเฟกต์เปลี่ยนแบบลื่น */
+}
+.btn:hover { transform: scale(1.05); } /* ขยายปุ่มเล็กน้อยเมื่อเอาเมาส์ชี้ */
+.btn:active { transform: scale(0.97); } /* ย่อปุ่มเล็กน้อยตอนกด */
+
+
+/* ════════════════════════════════
+   PAGE 2: นิ้วชี้
+════════════════════════════════ */
+/* นิ้วชี้ด้านซ้าย */
+.pointer-left {
+    font-size: clamp(1.6rem,5vw,2.2rem); /* ขนาดอิโมจิแบบ responsive */
+    animation: pointR 0.7s ease-in-out infinite alternate; /* อนิเมชันขยับ */
+    display: inline-block; user-select: none; /* แสดงแบบ inline-block และห้ามลากเลือก */
+}
+/* นิ้วชี้ด้านขวา */
+.pointer-right {
+    font-size: clamp(1.6rem,5vw,2.2rem);
+    animation: pointL 0.7s ease-in-out infinite alternate;
+    display: inline-block; transform: scaleX(-1); user-select: none; /* แสดงแบบ inline-block พลิกด้านแนวนอน ห้ามลากเลือก*/
+}
+/* อนิเมชันนิ้วชี้ */
+@keyframes pointR { from{transform:translateX(0)} to{transform:translateX(6px)} }
+@keyframes pointL { from{transform:scaleX(-1) translateX(0)} to{transform:scaleX(-1) translateX(6px)} }
+
+
+/* ════════════════════════════════
+   PAGE 3: เค้ก
+════════════════════════════════ */
+/* กล่องครอบเค้ก */
+.cake-wrapper {
+    position: relative; height: clamp(75px,15vw,110px); /* ใช้เป็นจุดอ้างอิงตำแหน่ง */
+    margin: clamp(6px,2vw,14px) 0 clamp(4px,1.5vw,10px) 0; /* ระยะห่างด้านบนและล่าง */
+}
+/* ตัวเค้ก */
+.cake {
+    position: absolute; bottom:0; left:50%; transform:translateX(-50%); /*จัดอยู่ตรงกลาง*/
+    width:clamp(100px,26vw,140px); height:clamp(46px,12vw,65px); /*ขนาดความกว้างสุงของเค้ก*/
+    background:#f48fb1; border-radius:10px 10px 0 0; /* สีเค้ก และมุมโค้ง */
+    box-shadow:inset 0 5px 0 #f06292,0 4px 10px rgba(0,0,0,0.2); /* เงาด้านในและด้านนอก */
+    transition:background 0.5s; /* เปลี่ยนสีแบบลื่น */
+}
+/* ชั้นครีมบนเค้ก */
+.cake::before {
+    content:''; position:absolute; top:35%; left:0; width:100%; height:12px; background:#fff;
+}
+/* เทียน */
+.candle {
+    position:absolute; bottom:clamp(46px,12vw,65px); left:50%;
+    transform:translateX(-50%);
+    width:10px; height:35px;
+    background:linear-gradient(to right,#e0e0e0,#fff); border-radius:3px;
+}
+/* เปลวไฟ */
+.flame {
+    position:absolute; top:-15px; left:50%; transform:translateX(-50%);
+    width:12px; height:18px; background:#ffb74d;
+    border-radius:50% 50% 20% 20%; box-shadow:0 0 12px #ff9800;
+    animation:flicker 0.1s ease-in-out infinite alternate; transition:opacity 0.4s;
+}
+/* ตอนเป่าไฟดับ */
+.flame.out { opacity:0; animation:none; }
+/* อนิเมชันเปลวไฟ */
+@keyframes flicker {
+    0%   { transform:translateX(-50%) scale(1); }
+    100% { transform:translateX(-50%) scale(1.1) skewX(2deg); }
+}
+
+/* ════════════════════════════════
+   ปุ่มเป่าเทียน 
+════════════════════════════════ */
+/* กล่องรวมปุ่ม */
+.blow-buttons { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:clamp(8px,2vw,14px); }
+
+ /* ปุ่มเป่าเทียนทั้งสองปุ่ม */
+#blowBtn, #micBlowBtn {
+    color:white; border:none;
+    padding:10px 22px; font-size:clamp(0.85rem,2.5vw,1rem);
+    border-radius:50px; cursor:pointer; font-weight:bold;
+    transition:all 0.3s;
+}
+/* ปุ่มเป่าปกติ กรณีไมค์ใช้ไม่ได้*/
+#blowBtn {
+    background:linear-gradient(45deg,#a78bfa,#60a5fa);
+    box-shadow:0 4px 14px rgba(96,165,250,0.45);
+}
+/* ปุ่มเป่าผ่านไมค์ */
+#micBlowBtn {
+    background:linear-gradient(45deg,#f97316,#ef4444);
+    box-shadow:0 4px 14px rgba(239,68,68,0.45);
+}
+#blowBtn:hover, #micBlowBtn:hover { transform:scale(1.06); }
+#blowBtn:active, #micBlowBtn:active { transform:scale(0.96); }
+#blowBtn:disabled, #micBlowBtn:disabled { opacity:0.5; cursor:default; transform:none; }
+
+ /* ข้อความสถานะไมโครโฟน */
+#micStatus {
+    font-size:clamp(0.75rem,2vw,0.82rem);
+    color:rgba(255,255,255,0.65);
+    margin-bottom:6px; min-height:18px;
+    text-shadow:0 1px 3px rgba(0,0,0,0.6);
+}
+
+/* mic level bar  แถบระดับเสียงไมค์ */
+/* กล่องแถบระดับเสียง */
+.mic-level-wrap {
+    width:100%; height:6px;
+    background:rgba(255,255,255,0.12);
+    border-radius:10px; overflow:hidden;
+    margin-bottom:8px; display:none;
+}
+/* แถบระดับเสียงจริง */
+.mic-level-bar {
+    height:100%; width:0%;
+    background:linear-gradient(90deg,#f97316,#ef4444);
+    border-radius:10px; transition:width 0.05s linear;
+}
+
+/* กล่องแถบความคืบหน้าการเป่า */
+.blow-progress-wrap {
+    width:100%; height:8px; background:rgba(255,255,255,0.15);
+    border-radius:10px; overflow:hidden;
+    margin-bottom:clamp(8px,2vw,14px); display:none;
+}
+/* แถบความคืบหน้าจริง */
+.blow-progress-bar {
+    height:100%; width:0%;
+    background:linear-gradient(90deg,#a78bfa,#60a5fa);
+    border-radius:10px; transition:width 0.1s linear;
+}
+
+/* ข้อความหลังเป่าเทียน */
+#postBlowMsg {
+    display:none; font-size:clamp(1rem,3vw,1.15rem);
+    color:#fff9c4; text-shadow:0 0 10px #fbc02d,0 2px 6px rgba(0,0,0,0.8);
+    margin-bottom:clamp(8px,2vw,12px); animation:fadeIn 0.6s ease forwards;
+}
+
+/* ════════════════════════════════
+   EMOTIONAL DAMAGE
+════════════════════════════════ */
+/* กล่องแสดงจำนวนวันที่เกิดมา */
+.days-alive-box {
+    background: linear-gradient(135deg, rgba(255,107,139,0.2), rgba(167,139,250,0.2)); /*พื้นหลัง*/
+    border: 1px solid rgba(255,180,200,0.4); /* ขอบกล่อง */
+    border-radius: 18px;  /* มุมโค้ง */
+    padding: clamp(8px,2vw,14px); /* ระยะห่างด้านใน */
+    margin-bottom: clamp(8px,2vw,14px); /* ระยะห่างด้านล่าง */
+    position: relative; overflow: hidden; /* ใช้เป็นจุดอ้างอิง และซ่อนส่วนที่เกินกรอบ */
+}
+/* อิโมจิตกแต่ง */
+.days-alive-box::before {
+    content: '😱'; 
+    position: absolute; top: -8px; right: 10px;
+    font-size: 2.5rem; opacity: 0.18;
+}
+/* ข้อความหัวข้อ */
+.days-alive-label {
+    font-size: clamp(0.75rem,2vw,0.85rem);
+    color: #fce4ec; opacity: 0.85; margin-bottom: 4px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+/* ตัวเลขจำนวนวัน */
+.days-alive-number {
+    font-size: clamp(1.6rem,6vw,2.6rem); font-weight: 900;
+    background: linear-gradient(90deg, #ff6b8b, #ffd93d, #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1; margin-bottom: 2px;
+    animation: pulseDays 2s ease-in-out infinite;
+}
+/* อนิเมชันตัวเลข */
+@keyframes pulseDays {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.04); }
+}
+/* ข้อความรอง */
+.days-alive-sub {
+    font-size: clamp(0.72rem,1.8vw,0.82rem);
+    color: rgba(255,255,255,0.6);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+/* แถวอิโมจิ */
+.days-alive-emoji-row { font-size: 1.1rem; margin-top: 6px; letter-spacing: 2px; }
+
+/* ════════════════════════════════
+   MESSAGE BOX กล่องข้อความ
+════════════════════════════════ */
+.message-box {
+    background:rgba(0,0,0,0.28); border:1px solid rgba(255,255,255,0.15);
+    padding:clamp(8px,2vw,12px); border-radius:15px;
+    margin-bottom:clamp(8px,2vw,14px);
+    font-size:clamp(0.78rem,2vw,0.9rem); line-height:1.55;
+    text-shadow:0 1px 3px rgba(0,0,0,0.7);
+}
+
+/* ════════════════════════════════
+   ช่องอธิษฐาน
+════════════════════════════════ */
+/* กล่องรวมช่องกรอกและปุ่ม */
+.wish-input-group { margin:clamp(6px,1.5vw,12px) 0; display:flex; gap:8px; }
+/* ช่องกรอกข้อความ */
+.wish-input {
+    flex:1; min-width:0;
+    padding:clamp(8px,2vw,11px) clamp(12px,3vw,16px);
+    border-radius:20px; border:2px solid rgba(255,255,255,0.4);
+    background:rgba(0,0,0,0.25); color:#fff; outline:none;
+    font-size:clamp(0.85rem,2.5vw,0.95rem);
+}
+.wish-input::placeholder { color:#ccc; } /* ข้อความตัวอย่างในช่องกรอก */
+/* ปุ่มส่งคำอธิษฐาน */
+.wish-btn {
+    background:#a724c5; border:none;
+    padding:clamp(8px,2vw,11px) clamp(14px,3vw,20px);
+    border-radius:20px; color:white; 
+    cursor:pointer; /* เมาส์เป็นรูปมือ */
+    font-weight:bold; 
+    font-size:clamp(0.85rem,2.5vw,0.95rem);
+    box-shadow:0 3px 10px rgba(79,195,247,0.4); 
+    white-space:nowrap; /* ห้ามข้อความขึ้นบรรทัดใหม่ */
+}
+
+/* ════════════════════════════════
+   JARS
+════════════════════════════════ */
+ /* กล่องรวมขวดโหล */
+.jars-container {
+    display:flex; /* เรียงแบบ flex */
+    justify-content:space-around; /* กระจายขวดให้ห่างกัน */
+    margin-top:clamp(10px,2.5vw,16px);
+    padding-top:clamp(8px,2vw,12px);
+    border-top:1px solid rgba(255,255,255,0.2);
+}
+/* กล่องของขวดแต่ละใบ */
+.jar-box { position:relative; cursor:pointer; width:46%; }
+
+/* ตัวขวดโหล */
+.glass-jar {
+    width: clamp(62px,16vw,82px); /* ความกว้าง */
+    height: clamp(82px,21vw,108px); /* ความสูง */
+    background: rgba(255,255,255,0.18); /* สีพื้นหลังโปร่งใส */
+    border: 2.5px solid rgba(255,255,255,0.7); /* ขอบขวด */
+    border-radius: 14px 14px 28px 28px;/* ทำมุมโค้ง */
+    margin: 0 auto 6px auto; /* จัดกลางและเว้นด้านล่าง */
+    position: relative;
+    transition: transform 0.25s, box-shadow 0.25s; /* เอฟเฟกต์ */
+    overflow: hidden; /* ซ่อนส่วนเกิน */
+}
+/* ฝาขวด */
+.glass-jar::before {
+    content: ''; position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    width: 52px; height: 10px;
+    border-radius: 5px; z-index: 4;
+}
+/* แงสะท้อนบนขวด */
+.glass-jar::after {
+    content: ''; position: absolute;
+    top: 6px; left: 6px; width: 28%; height: 55%;
+    background: linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 8px 2px 8px 2px;
+    z-index: 3; pointer-events: none;
+}
+.jar-box:hover .glass-jar { transform: scale(1.1) rotate(-2deg); } /* ขยายและเอียงเล็กน้อยเมื่อชี้เมาส์ */
+
+/* ขวดโหลคำอธิฐาน */
+.jar-wish .glass-jar {
+    background: rgba(79,195,247,0.18); border-color: #e170fa;
+    box-shadow: 0 6px 20px rgba(185, 89, 233, 0.589), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+/* ฝาขวดคำอธิฐาน */
+.jar-wish .glass-jar::before { background: #b3e5fc; box-shadow: 0 2px 6px rgba(79,195,247,0.5); }
+/* เพิ่มเงาเมื่อชี้เมาส์ */
+.jar-wish:hover .glass-jar   { box-shadow: 0 10px 28px rgba(185, 89, 233, 0.589); }
+
+/* ขวดโหลคำอวยพร */
+.jar-blessing .glass-jar {
+    background: rgba(244,143,177,0.18); border-color: #f48fb1;
+    box-shadow: 0 6px 20px rgba(244,143,177,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+/* ฝาขวด */
+.jar-blessing .glass-jar::before { background: #f8bbd0; box-shadow: 0 2px 6px rgba(244,143,177,0.5); }
+/* เพิ่มเงาเมื่อชี้เมาส์ */
+.jar-blessing:hover .glass-jar   { box-shadow: 0 10px 28px rgba(244,143,177,0.55); }
+
+/* กระดาษในขวด */
+.jar-papers {
+    position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex; flex-wrap: wrap; align-content: flex-end;
+    padding: 5px; gap: 2px; z-index: 1;
+}
+/* กระดาษตกแต่ง */
+.deco-paper { border-radius: 2px; flex-shrink: 0; }
+
+/* ════════════════════════════════
+   PAPER FOLD ANIMATION
+   ขั้นตอน: flat → fold → fly → land
+════════════════════════════════ */
+
+/* กระดาษบินออกจากปุ่ม */
+/* กระดาษที่กำลังบิน */
+.flying-paper {
+    position: fixed;
+    width: 18px; height: 14px;
+    z-index: 999; pointer-events: none;
+    transform-origin: center center;
+    animation: flyToJar 1s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+}
+/* อนิเมชันกระดาษบิน */
+@keyframes flyToJar {
+    0%   { transform:translate(0,0) rotate(0deg) scale(1); opacity:1; }
+    35%  { transform:translate(calc(var(--tx)*0.45), calc(var(--ty)*0.25 - 50px)) rotate(160deg) scale(0.85); opacity:1; }
+    100% { transform:translate(var(--tx),var(--ty)) rotate(480deg) scale(0.12); opacity:0; }
+}
+
+/* ─── overlay พับกระดาษ ─── */
+.fold-overlay {
+    position: fixed; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+    z-index: 9999; pointer-events: none;
+}
+
+/* กระดาษก่อนพับ — แผ่นสี่เหลี่ยม */
+.paper-stage {
+    position: relative;
+    width: 80px; height: 80px;
+    transform-style: preserve-3d;
+    animation: foldSequence 1.6s ease-in-out forwards;
+}
+
+/* อนิเมชันพับกระดาษ */
+@keyframes foldSequence {
+    0%   { transform: scale(0) rotate(-20deg); opacity:0; }
+    10%  { transform: scale(1) rotate(0deg);   opacity:1; }
+    /* กระพือซ้าย-ขวา */
+    30%  { transform: scale(1) rotate(0deg) rotateY(0deg); }
+    50%  { transform: scale(1) rotate(0deg) rotateY(-30deg); }
+    65%  { transform: scale(1) rotate(0deg) rotateY(15deg); }
+    75%  { transform: scale(0.85) rotate(8deg) rotateY(0deg); }
+    /* หด + หมุน → กลายเป็นกระดาษพับเล็ก */
+    88%  { transform: scale(0.35) rotate(20deg); opacity:1; }
+    100% { transform: scale(0) rotate(40deg);   opacity:0; }
+}
+/* หน้ากระดาษ */
+.paper-stage .face {
+    position: absolute; inset: 0;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; color: rgba(0,0,0,0.35); font-weight:bold;
+    letter-spacing:0.5px;
+}
+/* เส้นพับกลาง */
+.paper-stage .face::after {
+    content:'';
+    position:absolute; top:50%; left:0; right:0; height:1.5px;
+    background:rgba(0,0,0,0.12);
+}
+.paper-stage .face::before {
+    content:'';
+    position:absolute; left:50%; top:0; bottom:0; width:1.5px;
+    background:rgba(0,0,0,0.12);
+}
+/* มุมพับ */
+.paper-stage .corner {
+    position:absolute; top:0; right:0;
+    border-style:solid; border-width:0 20px 20px 0;
+    border-color:transparent rgba(0,0,0,0.15) transparent transparent;
+}
+/* เส้นสมมติตัวอักษร */
+.paper-stage .lines {
+    position:absolute; left:14px; top:28px; right:14px;
+    display:flex; flex-direction:column; gap:5px; pointer-events:none;
+}
+.paper-stage .line {
+    height:3px; border-radius:2px;
+    background:rgba(0,0,0,0.12);
+}
+.paper-stage .line:nth-child(3) { width:60%; }
+
+/* กระดาษพับในโหล */
+.folded-paper {
+    width: 13px; height: 10px;
+    flex-shrink: 0; position: relative; border-radius: 1px;
+    animation: paperLand 0.4s ease-out forwards;
+}
+/* มุมพับของกระดาษ */
+.folded-paper::after {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 0; height: 0; border-style: solid;
+    border-width: 0 4px 4px 0;
+    border-color: transparent rgba(0,0,0,0.2) transparent transparent;
+}
+/* อนิเมชันกระดาษตก */
+@keyframes paperLand {
+    0%   { transform: translateY(-20px) rotate(-20deg) scale(0.5); opacity:0; }
+    65%  { transform: translateY(3px)   rotate(4deg)   scale(1.1); opacity:1; }
+    100% { transform: translateY(0)     rotate(var(--r,0deg)) scale(1); opacity:1; }
+}
+
+/* ป้ายแจ้งเตือน */
+.badge {
+    position:absolute; top:-7px; right:14px;
+    background:#30dc05; color:white; font-size:0.7rem;
+    padding:2px 6px; border-radius:10px; font-weight:bold;
+    box-shadow:0 2px 6px rgba(255,51,102,0.5); z-index:10;
+    animation: badgePop 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+/* อนิเมชันป้ายเด้ง */
+@keyframes badgePop {
+    from { transform:scale(0.5); }
+    to   { transform:scale(1); }
+}
+/* ข้อความใต้ขวด */
+.jar-label {
+    font-size:clamp(0.72rem,2vw,0.82rem);
+    text-shadow:0 1px 4px rgba(0,0,0,0.8); line-height:1.4;
+}
+
+/* ════════════════════════════════
+   POPUP
+════════════════════════════════ */
+/* กล่องป็อปอัพ */
+.popup-blessing {
+    display:none; position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%) scale(0.8);
+    background:#fff; color:#333;
+    padding:clamp(18px,4vw,28px); border-radius:20px;
+    width:min(85vw,360px);
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    z-index:99; text-align:center;
+    animation:popUp 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards; /* อนิเมชันเด้งขึ้น */
+}
+/* อนิเมชันป็อปอัพ */
+@keyframes popUp { to { transform:translate(-50%,-50%) scale(1); opacity:1; } }
+/* ปุ่มปิดป็อปอัพ */
+.popup-close {
+    margin-top:15px; background:#ff6b8b; color:white; border:none;
+    padding:8px 22px; border-radius:15px; cursor:pointer;
+    font-size:clamp(0.9rem,2.5vw,1rem);
+}
+ /* พื้นหลังมืดด้านหลังป็อปอัพ */
+.overlay {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6); z-index:98;
+}
+
+/* ════════════════════════════════
+   RESPONSIVE รองรับหน้าจอหลายขยาย
+════════════════════════════════ */
+/* เมื่อจอเตี้ยและเป็นแนวนอน */
+@media (max-height:500px) and (orientation:landscape) {
+    .cake-wrapper { height:70px; margin:8px 0 6px 0; }
+    h1 { font-size:1.1rem; margin-bottom:6px; }
+    .message-box, .days-alive-box { display:none; }
+}
+/* เมื่อหน้าจอกว้างมากกว่า 600px */
+@media (min-width:600px) { .card-container { padding:32px; } }
+
+/* ════════════════════════════════
+   INTRO PAGE
+════════════════════════════════ */
+
+.intro-content {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:18px;
+    padding:30px 10px;
+}
+
+.gift-bounce {
+    font-size:5rem;
+    animation:giftBounce 1.2s infinite;
+    filter:drop-shadow(0 0 12px rgba(255,255,255,0.5));
+}
+
+.intro-title {
+    color:#fff;
+    text-shadow:0 0 10px rgba(0,0,0,0.7);
+}
+
+.intro-sub {
+    color:#fff;
+    opacity:0.9;
+}
+
+@keyframes giftBounce {
+    0%,100% {
+        transform:translateY(0);
+    }
+    50% {
+        transform:translateY(-12px);
+    }
+}
