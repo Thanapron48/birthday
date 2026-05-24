@@ -175,7 +175,7 @@ function startBlow() {
 let micStream=null, micCtx=null, micAnalyser=null, micRAF=null; /* ตัวแปรเกี่ยวกับไมโครโฟน */
 let micBlowing=false, micBlowAccum=0; /* สถานะการเป่า */
 const MIC_THRESHOLD = 0.18;   // ความดังขั้นต่ำที่ถือว่า "เป่า" (0–1)
-const MIC_NEEDED    = 8.0;     // เฟรมสะสมที่ต้องเป่าให้ครบ (~0.8 วิ)
+const MIC_NEEDED    = 5.0;     // เฟรมสะสมที่ต้องเป่าให้ครบ (~0.5 วิ)
 
 async function startMicBlow() {
     if (candleOut) return;
